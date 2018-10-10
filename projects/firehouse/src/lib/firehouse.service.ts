@@ -4,6 +4,7 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { AngularFireAuth } from '@angular/fire/auth';
 import * as firebase from 'firebase/app';
 import { auth } from 'firebase/app';
+import { Subject } from 'rxjs';
 
 
 /**
@@ -39,6 +40,27 @@ export interface Options {
 @Injectable()
 export class FirehouseService {
 
+  /**
+   * @todo test
+   */
+  auth: firebase.auth.Auth;
+
+  /**
+   * This is needed because if you call `onAuthStateChanged`,
+   *  you have to clean or it will be left on memory as closure
+   *  and it will be invoked again on auth state changes and leave as memory leak.
+   * So the clean way to to observe here once and use it every where.
+   *
+   * @desc WARNING: it must be Subject observble. So it will only fire when auth changes.
+   *  Even though you are going subscribe this, it will not fire until auth changes.
+   * @example
+   *
+        this.firehouse.authChange.subscribe( user => {
+            this.render();
+        });
+   */
+  authChange: Subject<firebase.User> = new Subject<firebase.User>();
+
   private options: Options = {
     domain: 'default-domain'
   };
@@ -47,6 +69,11 @@ export class FirehouseService {
     public db: AngularFirestore
   ) {
     //
+    this.auth = fireAuth.auth;
+    /**
+     * @todo test
+     */
+    this.auth.onAuthStateChanged( user => this.authChange.next( user ) );
   }
 
   public setOptions(options: Options) {
@@ -102,7 +129,7 @@ export class FirehouseService {
 
 
     const userData: User = Object.assign({}, user);
-    delete userData['email'];
+    // delete userData['email'];
     delete userData['password'];
 
     userData.uid = re.user.uid;
@@ -189,7 +216,7 @@ export class FirehouseService {
    * @todo test
    */
   isError(obj) {
-    return obj['code'] !== void 0;
+    return obj && obj['code'] !== void 0;
   }
 }
 
