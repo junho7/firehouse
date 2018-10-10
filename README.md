@@ -2,7 +2,7 @@
 
 ## Documents
 
-* [Sample/Exmaple Project](https://github.com/thruthesky/swallow/tree/master/projects/jaeho)
+* [Sample/Exmaple Project](https://github.com/thruthesky/swallow/tree/master/projects/jaeho). See this project for example.
 
 ## Requirements
 
