@@ -121,6 +121,41 @@
           }
         }
       }
+    },
+    "firehouse": {
+      "root": "projects/firehouse",
+      "sourceRoot": "projects/firehouse/src",
+      "projectType": "library",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/firehouse/tsconfig.lib.json",
+            "project": "projects/firehouse/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/firehouse/src/test.ts",
+            "tsConfig": "projects/firehouse/tsconfig.spec.json",
+            "karmaConfig": "projects/firehouse/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/firehouse/tsconfig.lib.json",
+              "projects/firehouse/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }
   },
   "defaultProject": "firehouse-app"
