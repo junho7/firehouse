@@ -15,10 +15,16 @@ export const ERROR_EMPTY_EMAIL = 'empty-email';
 export const ERROR_EMPTY_PASSWORD = 'empty-password';
 export const ERROR_LOGIN_FIRST = 'login-first';
 
+export interface Error {
+  code: string;
+  message: string;
+}
+
 export interface User {
   uid?: string;
   email?: string;
   password?: string;
+  name?: string;
   nickname?: string;
   gender?: 'M' | 'F';
   birthday?: string;
@@ -30,7 +36,7 @@ export interface Options {
 }
 
 
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class FirehouseService {
 
   private options: Options = {
@@ -43,31 +49,42 @@ export class FirehouseService {
     //
   }
 
-  setOptions(options: Options) {
+  public setOptions(options: Options) {
     Object.assign(this.options, options);
   }
-  error(code, message) {
+  public error(code, message) {
     return { code: code, message: message };
   }
 
-  get docDomain() {
+  public get docDomain() {
     return this.db.collection(DATABASE_COLLECTION).doc(this.options.domain);
   }
-  get colUser() {
+  public get colUser() {
     return this.docDomain.collection('users');
   }
-  docUser(id: string) {
-    return this.colUser.doc(id);
+  /**
+   * Returns document ref
+   * @param uid user uid
+   */
+  public docUser(uid: string) {
+    return this.colUser.doc(uid);
   }
 
   /**
    * Register into firebase authentication using email and password.
    * @see https://github.com/angular/angularfire2/blob/master/docs/auth/getting-started.md
+   * @example @see https://github.com/thruthesky/firehouse/blob/master/projects/firehouse/src/lib/firehouse.test.service.ts
    * @param user UserRegister data
    *
-   * @return Error object or user data.
+   * @return A promise of user data on success.
+   *    Or an error will be thrown.
+   *
+   * @desc A thrown error will always have 'code' and 'message' properties.
+   * @example
+   *      const re = await this.s.userRegister(form).catch(e => e);
+   *      if ( re.code === void 0 ) { ... errror ... }
    */
-  async userRegister(user: User): Promise<firebase.UserInfo> {
+  public async userRegister(user: User): Promise<firebase.UserInfo> {
     console.log('userRegister() => ', user);
 
     if (user === void 0) {
@@ -100,11 +117,11 @@ export class FirehouseService {
   }
 
 
-  async userLogout(): Promise<void> {
+  public async userLogout(): Promise<void> {
     return await this.fireAuth.auth.signOut();
   }
 
-  async userLogin(email: string, password: string): Promise<firebase.UserInfo> {
+  public async userLogin(email: string, password: string): Promise<firebase.UserInfo> {
     if (email === void 0 || typeof email !== 'string' || !email) {
       throw this.error(ERROR_EMPTY_EMAIL, 'Email is empty.');
     }
@@ -124,7 +141,7 @@ export class FirehouseService {
    * @example how to handle error
    *    const e = await this.s.docUser(otherUid).update({ gender: 'U' }).catch( e => e );
    */
-  async userUpdate(user: User): Promise<User> {
+  public async userUpdate(user: User): Promise<User> {
     if (!this.fireAuth.auth.currentUser) {
       throw this.error(ERROR_LOGIN_FIRST, 'User is not logged in');
     }
@@ -133,7 +150,11 @@ export class FirehouseService {
      * @desc error concern. if update fails, it will just throw out of the function!!
      */
     await this.docUser(this.currentUser.uid).update(user);
-    return <any>this.docUser(this.currentUser.uid).ref.get()
+    return await this.userGet(this.currentUser.uid);
+  }
+
+  async userGet(uid: string): Promise<User> {
+    return await <any>this.docUser(uid).ref.get()
       .then(doc => {
         if (doc.exists) {
           return doc.data();
@@ -146,6 +167,29 @@ export class FirehouseService {
 
   get currentUser(): firebase.UserInfo {
     return this.fireAuth.auth.currentUser;
+  }
+
+  /**
+   * @todo need test
+   */
+  get isLoggedIn(): boolean {
+    return !!this.currentUser;
+  }
+
+  /**
+   * @todo test
+   */
+  get isLoggedOut() {
+    return !this.isLoggedIn;
+  }
+
+  /**
+   * Returns true if the input is an error object.
+   * @param obj error object
+   * @todo test
+   */
+  isError(obj) {
+    return obj['code'] !== void 0;
   }
 }
 

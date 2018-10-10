@@ -90,6 +90,9 @@ export class FirehouseTestService {
         this.true(user.code === void 0, `Success login with: ${user.email} uid: ${user.uid}`);
 
 
+        /**
+         * User update
+         */
         re = await this.s.userUpdate({ mobile: '12345' }).catch(e => e);
         this.true(re.code === void 0, 'User update: ', re);
 

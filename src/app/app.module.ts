@@ -18,7 +18,7 @@ import { AngularFireModule } from '@angular/fire';
       projectId: 'swallow-15e18',
       storageBucket: 'swallow-15e18.appspot.com',
       messagingSenderId: '1088400198831'
-  }),
+    }),
     FirehouseModule
   ],
   providers: [],
