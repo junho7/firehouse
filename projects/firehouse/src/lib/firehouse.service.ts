@@ -46,7 +46,11 @@ export class FirehouseService {
   auth: firebase.auth.Auth;
 
   /**
-   * This is needed because if you call `onAuthStateChanged`,
+   * @deprecated Do not use this event since it does not give any improvement in coding.
+   *  Once you subscribe, you have to un-subscribe.
+   *  Then what's the difference beteween this and using authUserChanged?
+   *
+   * @desc This is needed because if you call `onAuthStateChanged`,
    *  you have to clean or it will be left on memory as closure
    *  and it will be invoked again on auth state changes and leave as memory leak.
    * So the clean way to to observe here once and use it every where.
